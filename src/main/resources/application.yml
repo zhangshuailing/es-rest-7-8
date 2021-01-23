@@ -1,0 +1,12 @@
+
+server:
+  port: 80
+
+#是否激活 swagger true or false
+swagger:
+  enable: true
+# 配置es
+spring:
+  elasticsearch:
+    rest:
+      uris: 10.170.130.231:9200
