@@ -416,4 +416,23 @@ public class ParamsUtil {
         String[] array = list.toArray(new String[0]);
         return array;
     }
+
+    /**
+     * 获取集合数据
+     * @param map
+     * @param key
+     * @return
+     * @throws Exception
+     */
+    public static List<Map<String,Object>> checkListMapValue(Map<String,Object> map,String key) throws Exception{
+        List<Map<String,Object>> query = null;
+        if (map.containsKey(key)) {
+            try {
+                query = (List<Map<String, Object>>) JSON.toJSON(map.get(key));
+            } catch (Exception e) {
+                throw new Exception("参数 " + key + " 类型错误");
+            }
+        }
+        return query==null?new ArrayList<>():query;
+    }
 }

@@ -1,6 +1,6 @@
 
 server:
-  port: 80
+  port: 8011
 
 #是否激活 swagger true or false
 swagger:

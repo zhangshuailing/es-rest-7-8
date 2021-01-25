@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import nk.gk.wyl.elasticsearch.api.ElasticsearchActService;
 import nk.gk.wyl.elasticsearch.api.ElasticsearchService;
 import nk.gk.wyl.elasticsearch.data.EsDataUtil;
 import nk.gk.wyl.elasticsearch.entity.result.Response;
@@ -40,6 +41,8 @@ public class ElasticsearchController {
 
     @Autowired
     private ElasticsearchService api;
+    @Autowired
+    private ElasticsearchActService actApi;
 
     /**
      * 新增或编辑
@@ -142,7 +145,7 @@ public class ElasticsearchController {
     })
     public @ResponseBody
     Response  list(@PathVariable("index") String index,
-                          @RequestBody Map<String,Object> body) throws Exception {
+                          @RequestBody Map<String,Object> body) {
         try {
             return new Response().success(api.findList(client,index,body));
         } catch (Exception e) {
@@ -176,7 +179,7 @@ public class ElasticsearchController {
     })
     public @ResponseBody
     Response  page(@PathVariable("index") String index,
-                                   @RequestBody Map<String,Object> body) throws Exception {
+                                   @RequestBody Map<String,Object> body) {
         try {
             return new Response().success(api.page(client,index,body));
         } catch (Exception e) {
@@ -207,7 +210,7 @@ public class ElasticsearchController {
                     "12、keys 指定分词的字段",required = true,defaultValue = "{}")
     })
     public @ResponseBody
-    Response  pageFull(@RequestBody Map<String,Object> body) throws Exception {
+    Response  pageFull(@RequestBody Map<String,Object> body) {
         String index = ParamsUtil.getValue(body,"index");
         try {
             return new Response().success(api.page(client,index,body));
@@ -229,7 +232,7 @@ public class ElasticsearchController {
     })
     public @ResponseBody
     Response  findIndexFiledList(@PathVariable("index") String index,
-                                                 @RequestParam(value = "is_all",defaultValue = "true") boolean is_all) throws Exception {
+                                                 @RequestParam(value = "is_all",defaultValue = "true") boolean is_all) {
         try {
             return new Response().success(EsDataUtil.getIndexFiledList(client,index,is_all));
         } catch (Exception e) {
@@ -249,7 +252,7 @@ public class ElasticsearchController {
     })
     public @ResponseBody
     Response  findIndexFiledList(
-            @RequestParam(value = "is_all",defaultValue = "true") boolean is_all) throws Exception {
+            @RequestParam(value = "is_all",defaultValue = "true") boolean is_all){
         try {
             return new Response().success(EsDataUtil.getIndexFiledList(client,"",is_all));
         } catch (Exception e) {
@@ -274,11 +277,12 @@ public class ElasticsearchController {
     })
     public @ResponseBody
     Response  deleteBatch(@PathVariable("index") String index,
-                               @RequestBody Map<String,Object> body) throws Exception {
-        List<String> ids = ParamsUtil.checkMapList(body,"ids");
-        String uid = ParamsUtil.getUid(body);
+                               @RequestBody Map<String,Object> body) {
+
         // 逻辑还是物理删除
         try {
+            List<String> ids = ParamsUtil.checkMapList(body,"ids");
+            String uid = ParamsUtil.getUid(body);
             return new Response().success(api.delete(client,index,ids,uid));
         } catch (Exception e) {
             return new Response().error(e.getMessage());
@@ -469,4 +473,26 @@ public class ElasticsearchController {
                                @RequestBody Map<String,Object> map_body) throws Exception{
         return api.findCountByGroup(client,index,field,groupCount,size,map_body);
     }*/
+
+    /**
+     * 批量更新
+     * @param index 索引名称
+     * @param map 存储对象
+     * @return 返回数据对象
+     */
+    @PostMapping("{index}/insertBatch")
+    @ApiOperation(value = "批量更新")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "index",value = "索引名称",required = true,paramType = "path"),
+            @ApiImplicitParam(name = "map", value = "body参数",paramType = "body")
+    })
+    public @ResponseBody
+    Response  insertBatch(@PathVariable("index") String index, @RequestBody Map<String,Object> map) {
+        try {
+            List<Map<String,Object>> save = ParamsUtil.checkListMapValue(map,"saves");
+            return new Response().success(actApi.insertBatch(client,index,save));
+        } catch (Exception e) {
+            return new Response().error(e.getMessage());
+        }
+    }
 }
